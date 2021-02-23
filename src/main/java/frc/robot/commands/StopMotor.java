@@ -2,12 +2,11 @@ package frc.robot.commands;
 
 import frc.robot.Robot;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import static frc.robot.Constants.*;
 
-public class IntakeIn extends CommandBase {
+public class StopMotor extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
 
-  public IntakeIn() {
+  public StopMotor() {
     addRequirements(Robot.base);
   }
 

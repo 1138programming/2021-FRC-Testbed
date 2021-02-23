@@ -44,8 +44,8 @@ public class Base extends SubsystemBase {
     
         //Set brake mode
         int i = 0;
-        while(i < Talons.size()){
-            Talons.get(i).setNeutralMode(NeutralMode.Brake); 
+        while(i < talons.size()){
+            talons.get(i).setNeutralMode(NeutralMode.Brake); 
             i = i + 1;
         }
 
@@ -62,19 +62,19 @@ public class Base extends SubsystemBase {
     }
 
     public void UpdateCurrentMotor() {
-        if (CurrentMotor < Talons.size()) {
+        if (CurrentMotor < talons.size()) {
             CurrentMotor = 0;             
         } else {
             CurrentMotor = CurrentMotor + 1;
         }
     }
 
-    public string getCurrentMotor() {
+    public String getCurrentMotor() {
         return motorName.get(CurrentMotor);
     }
 
-    public void move(double PWNM) {
-        motorName.get(CurrentMotor).set(ControlMode.PercentOutput, PWM);
+    public void move(double PWM) {
+        talons.get(CurrentMotor).set(ControlMode.PercentOutput, PWM);
     }
 
     @Override
