@@ -12,5 +12,11 @@ public final class Constants {
     public static final int KRightFrontAngleTalon = 5;
     public static final int KRightBackAngleTalon = 4;
 
-    public static final double KBasePWM = 0.5;
+    public static final int KLeftFrontMagEncoder = 9;
+    public static final int KLeftBackMagEncoder = 10;
+    public static final int KRightFrontMagEncoder = 11;
+    public static final int KRightBackMagEncoder = 12;
+
+    public static final double KBasePWM = 4.14528;
+    public static final double KAngularSpeed = Math.PI;
 }

@@ -4,10 +4,17 @@ import java.util.*;
 import static frc.robot.Constants.*;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.subsystems.SwerveModuleController;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -17,10 +24,12 @@ public class Base extends SubsystemBase {
     private final TalonFX leftFrontAngle, leftBackAngle, rightBackAngle, rightFrontAngle;
 
     private final TalonSRX leftFrontMagEncoder, leftBackMagEncoder, rightFrontMagEncoder, rightBackMagEncoder;
-    
-    int CurrentMotor = 0; 
-    List<String> motorName;
-    List<TalonFX> talons;
+
+    private final Translation2d leftFrontLocation, leftBackLocation, rightFrontLocation, rightBackLocation;
+    private final SwerveDriveKinematics kinematics; 
+
+    private final SwerveModuleController leftFrontModule, rightFrontModule, leftBackModule, rightBackModule; 
+    private SwerveModuleController[] modules;
 
     public Base() {
         // Instantiating the Talons
@@ -34,86 +43,59 @@ public class Base extends SubsystemBase {
         rightFrontAngle = new TalonFX(KRightFrontAngleTalon);
         rightBackAngle = new TalonFX(KRightBackAngleTalon);
 
+        leftFrontSpeed.setNeutralMode(NeutralMode.Brake);
+        leftBackSpeed.setNeutralMode(NeutralMode.Brake);
+        rightFrontSpeed.setNeutralMode(NeutralMode.Brake);
+        rightBackSpeed.setNeutralMode(NeutralMode.Brake);
+
+        leftFrontAngle.setNeutralMode(NeutralMode.Brake);
+        leftBackAngle.setNeutralMode(NeutralMode.Brake);
+        rightFrontAngle.setNeutralMode(NeutralMode.Brake);
+        rightBackAngle.setNeutralMode(NeutralMode.Brake);
+
         //Mag Encoder
-        leftFrontMagEncoder = new TalonSRX(2);
-        leftBackMagEncoder = new TalonSRX(2);
-        rightFrontMagEncoder = new TalonSRX(2);
-        rightBackMagEncoder = new TalonSRX(2);
+        leftFrontMagEncoder = new TalonSRX(KLeftFrontMagEncoder);
+        leftBackMagEncoder = new TalonSRX(KLeftBackMagEncoder);
+        rightFrontMagEncoder = new TalonSRX(KRightFrontMagEncoder);
+        rightBackMagEncoder = new TalonSRX(KRightBackMagEncoder);
 
         leftFrontMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
         leftBackMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
         rightFrontMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
         rightBackMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
 
-        //put the talons into an array
-        talons = new ArrayList<TalonFX>();
-        talons.add(leftFrontSpeed);
-        talons.add(leftBackSpeed);
-        talons.add(rightFrontSpeed);
-        talons.add(rightBackSpeed);
+        // TODO: Locations for the swerve drive modules relative to the robot center
+        leftFrontLocation = new Translation2d(0.5207, 0.5207);
+        leftBackLocation = new Translation2d(-0.5207, 0.5207);
+        rightFrontLocation = new Translation2d(0.5207, -0.5207);
+        rightBackLocation = new Translation2d(-0.5207, -0.5207);
 
-        talons.add(leftFrontAngle);
-        talons.add(leftBackAngle);
-        talons.add(rightFrontAngle);
-        talons.add(rightBackAngle);
-    
-        //Set brake mode
-        int i = 0;
-        while(i < talons.size()){
-            talons.get(i).setNeutralMode(NeutralMode.Brake); 
-            i = i + 1;
+        kinematics = new SwerveDriveKinematics(leftFrontLocation, rightFrontLocation, leftBackLocation, rightBackLocation);
+        
+        //modules
+        leftFrontModule = new SwerveModuleController(leftFrontSpeed, leftFrontAngle, leftFrontMagEncoder, Rotation2d.fromDegrees(0));
+        leftBackModule = new SwerveModuleController(leftBackSpeed, leftBackAngle, leftBackMagEncoder, Rotation2d.fromDegrees(0));
+        rightFrontModule = new SwerveModuleController(rightFrontSpeed, rightFrontAngle, rightFrontMagEncoder, Rotation2d.fromDegrees(0));
+        rightBackModule = new SwerveModuleController(rightBackSpeed, rightBackAngle, rightBackMagEncoder, Rotation2d.fromDegrees(0));
+
+        modules = new SwerveModuleController[] {
+            leftFrontModule, leftBackModule, rightFrontModule, rightBackModule
+        };
+    }
+
+    public void drive(double xSpeed, double ySpeed, double rot) {
+        SwerveModuleState[] states =
+          kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, gyro.getRotation2d()));
+        SwerveDriveKinematics.normalizeWheelSpeeds(states, KBasePWM);
+        for (int i = 0; i < states.length; i++) {
+          SwerveModuleController module = modules[i];
+          SwerveModuleState state = states[i];
+          module.setDesiredState(state);
         }
-
-        motorName = new ArrayList<String>();
-        motorName.add("leftFrontSpeed");
-        motorName.add("leftBackSpeed");
-        motorName.add("rightFrontSpeed");
-        motorName.add("rightBackSpeed");
-
-        motorName.add("leftFrontAngle");
-        motorName.add("leftBackAngle");
-        motorName.add("rightFrontAngle");
-        motorName.add("rightBackAngle");
-    }
-
-    public void UpdateCurrentMotor() {
-        if (CurrentMotor < talons.size()) {
-            CurrentMotor = 0;             
-        } else {
-            CurrentMotor = CurrentMotor + 1;
-        }
-    }
-
-    public String getCurrentMotor() {
-        return motorName.get(CurrentMotor);
-    }
-
-    public double getLeftFrontEncoder() {
-        return leftFrontMagEncoder.getSelectedSensorPosition(); 
-    }
-
-    public double getLeftBackEncoder() {
-        return leftBackMagEncoder.getSelectedSensorPosition(); 
-    }
-
-    public double getRightFrontEncoder() {
-        return rightFrontMagEncoder.getSelectedSensorPosition(); 
-    }
-
-    public double getRightBackEncoder() {
-        return rightBackMagEncoder.getSelectedSensorPosition(); 
-    }
-
-    public void move(double PWM) {
-        talons.get(CurrentMotor).set(ControlMode.PercentOutput, PWM);
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Left Front Encoder", getLeftFrontEncoder());
-        SmartDashboard.putNumber("Left Back Encoder", getLeftBackEncoder());
-        SmartDashboard.putNumber("Right Front Encoder", getRightFrontEncoder());
-        SmartDashboard.putNumber("Right Back Encoder", getRightBackEncoder());
     }
   
     @Override

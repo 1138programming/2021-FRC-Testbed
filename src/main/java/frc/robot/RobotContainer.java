@@ -6,11 +6,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
-import frc.robot.commands.ChangeMotor;
-import frc.robot.commands.MoveMotor;
-import frc.robot.commands.StopMotor;
-
 import frc.robot.Robot;
+import frc.robot.commands.SwerveWithJoysticks;
 
 public class RobotContainer {
   // Controller Constants
@@ -55,7 +52,7 @@ public class RobotContainer {
    */
   public RobotContainer() {
     // Set default commands
-    Robot.base.setDefaultCommand(new StopMotor());  
+    Robot.base.setDefaultCommand(new SwerveWithJoysticks());  
     // Controllers
     logitech = new Joystick(KLogitechDrive);
     xbox = new XboxController(KXboxArms);
@@ -87,9 +84,41 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
-    logitechBtnRT.whenPressed(new ChangeMotor());
 
-    logitechBtnA.whileHeld(new MoveMotor());
+  }
+
+  public double getRightAxis() {
+    final double Y = logitech.getRawAxis(KRightYAxis);
+    if (Y > KDeadZone || Y < -KDeadZone)
+      return -Y;
+    else
+      return 0;
+  }
+
+  public double getLeftAxis() {
+    final double Y = logitech.getRawAxis(KLeftYAxis);
+    if(Y > KDeadZone || Y < -KDeadZone)
+      return -Y;
+    else 
+      return 0; 
+  }
+
+  public double getArcadeRightAxis() {
+    double X = logitech.getRawAxis(2);
+    if (X > KDeadZone || X < -KDeadZone) {
+      return -X;
+    } else {
+      return 0; 
+    }
+  }
+
+  public double getArcadeLeftAxis() {
+    double X = logitech.getRawAxis(0);
+    if (X > KDeadZone || X < -KDeadZone) {
+      return -X;
+    } else {
+      return 0; 
+    }
   }
 
   /**
