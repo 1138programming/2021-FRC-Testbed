@@ -5,9 +5,9 @@ import static frc.robot.Constants.*;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
+import com.ctre.phoenix.sensors.CANCoder;
+
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
@@ -16,6 +16,9 @@ import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.SwerveModuleController;
 
+import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.wpilibj.SPI;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Base extends SubsystemBase {
@@ -23,7 +26,9 @@ public class Base extends SubsystemBase {
     private final TalonFX leftFrontSpeed, leftBackSpeed, rightBackSpeed, rightFrontSpeed;
     private final TalonFX leftFrontAngle, leftBackAngle, rightBackAngle, rightFrontAngle;
 
-    private final TalonSRX leftFrontMagEncoder, leftBackMagEncoder, rightFrontMagEncoder, rightBackMagEncoder;
+    private final CANCoder leftFrontMagEncoder, leftBackMagEncoder, rightFrontMagEncoder, rightBackMagEncoder;
+
+    private final AHRS ahrs;
 
     private final Translation2d leftFrontLocation, leftBackLocation, rightFrontLocation, rightBackLocation;
     private final SwerveDriveKinematics kinematics; 
@@ -54,15 +59,13 @@ public class Base extends SubsystemBase {
         rightBackAngle.setNeutralMode(NeutralMode.Brake);
 
         //Mag Encoder
-        leftFrontMagEncoder = new TalonSRX(KLeftFrontMagEncoder);
-        leftBackMagEncoder = new TalonSRX(KLeftBackMagEncoder);
-        rightFrontMagEncoder = new TalonSRX(KRightFrontMagEncoder);
-        rightBackMagEncoder = new TalonSRX(KRightBackMagEncoder);
+        leftFrontMagEncoder = new CANCoder(KLeftFrontMagEncoder);
+        leftBackMagEncoder = new CANCoder(KLeftBackMagEncoder);
+        rightFrontMagEncoder = new CANCoder(KRightFrontMagEncoder);
+        rightBackMagEncoder = new CANCoder(KRightBackMagEncoder);
 
-        leftFrontMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-        leftBackMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-        rightFrontMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
-        rightBackMagEncoder.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
+        //Gyro Navx
+        ahrs = new AHRS(SPI.Port.kMXP);
 
         // TODO: Locations for the swerve drive modules relative to the robot center
         leftFrontLocation = new Translation2d(0.5207, 0.5207);
@@ -79,19 +82,26 @@ public class Base extends SubsystemBase {
         rightBackModule = new SwerveModuleController(rightBackSpeed, rightBackAngle, rightBackMagEncoder, Rotation2d.fromDegrees(0));
 
         modules = new SwerveModuleController[] {
-            leftFrontModule, leftBackModule, rightFrontModule, rightBackModule
+            leftFrontModule, leftBackModule, rightFrontModule, rightBackModule 
         };
     }
 
-    public void drive(double xSpeed, double ySpeed, double rot) {
-        SwerveModuleState[] states =
-          kinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, gyro.getRotation2d()));
-        SwerveDriveKinematics.normalizeWheelSpeeds(states, KBasePWM);
-        for (int i = 0; i < states.length; i++) {
-          SwerveModuleController module = modules[i];
-          SwerveModuleState state = states[i];
-          module.setDesiredState(state);
-        }
+    public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+      SwerveModuleState[] states =
+        kinematics.toSwerveModuleStates(
+          fieldRelative
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, ahrs.getRotation2d())
+            : new ChassisSpeeds(xSpeed, ySpeed, rot));
+      SwerveDriveKinematics.normalizeWheelSpeeds(states, KBasePWM);
+      for (int i = 0; i < states.length; i++) {
+        SwerveModuleController module = modules[i];
+        SwerveModuleState state = states[i];
+        module.setDesiredState(state);
+      }
+    }
+
+    public void yawReset() {
+      ahrs.zeroYaw();
     }
 
     @Override
