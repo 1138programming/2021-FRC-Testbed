@@ -8,7 +8,8 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 import frc.robot.Robot;
 import frc.robot.commands.SwerveWithJoysticks;
-import frc.robot.commands.resetGyro;
+import frc.robot.commands.ResetGyro;
+import frc.robot.CommandGroups.AutonMoveBaseFor;
 
 public class RobotContainer {
   // Controller Constants
@@ -85,7 +86,7 @@ public class RobotContainer {
   }
 
   private void configureButtonBindings() {
-    logitechBtnRB.whenPressed(new resetGyro());
+    logitechBtnRB.whenPressed(new ResetGyro());
   }
 
   public double getRightAxis() {
@@ -129,6 +130,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return null;
+    return new AutonMoveBaseFor();
   }
 }

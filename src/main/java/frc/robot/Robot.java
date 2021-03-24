@@ -12,6 +12,7 @@ import frc.robot.subsystems.Base;
  * project.
  */
 public class Robot extends TimedRobot {
+  public static boolean autonomousActive = false;
   public static final Base base = new Base();
   
   private Command m_autonomousCommand;
@@ -26,6 +27,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    autonomousActive = false;
   }
 
   /**
@@ -60,11 +62,16 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+    autonomousActive = true;
+
+
   }
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    autonomousActive = true;
+  }
 
   @Override
   public void teleopInit() {
@@ -75,11 +82,14 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    autonomousActive = false;
   }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    autonomousActive = false;
+  }
 
   @Override
   public void testInit() {
