@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.util.Units;
 
 public final class Constants {
   //these are limits you can change!!!
-  public static final double kMaxSpeed = Units.feetToMeters(13.6)/100; // 20 feet per second
+  public static final double kMaxSpeed = Units.feetToMeters(13.6); // 20 feet per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
   public static double feildCalibration = 0;
 
@@ -18,7 +18,7 @@ public final class Constants {
 
   //put your can Id's here!
   public static final int frontLeftDriveId = 8; 
-  public static final int frontLeftCANifierId = 9; 
+  public static final int frontLeftCANifierId = 12; 
   public static final int frontLeftSteerId = 2;
   //put your can Id's here!
   public static final int frontRightDriveId = 7; 
@@ -26,11 +26,11 @@ public final class Constants {
   public static final int frontRightSteerId = 5; 
   //put your can Id's here!
   public static final int backLeftDriveId = 6; 
-  public static final int backLeftCANifierId = 10; 
+  public static final int backLeftCANifierId = 9; 
   public static final int backLeftSteerId = 3;
   //put your can Id's here!
 
   public static final int backRightDriveId = 1; 
-  public static final int backRightCANifierId = 12; 
+  public static final int backRightCANifierId = 10; 
   public static final int backRightSteerId = 4; 
 }

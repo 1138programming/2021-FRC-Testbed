@@ -17,7 +17,7 @@ public class RobotContainer {
   private static final int KXboxArms = 1;  
 
   //Deadzone
-  private static final double KDeadZone = 0.02;
+  private static final double KDeadZone = 0.05;
 
   //Logitech Button Constants
   public static final int KLogitechButtonX = 1;

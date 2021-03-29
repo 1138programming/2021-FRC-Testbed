@@ -19,7 +19,7 @@ import frc.robot.Gains;
 public class SwerveModuleMK3 {
 
   private static final Gains kDriveGains = new Gains(15, 0.01, 0.1, 0.2, 0, 1.0);
-  private static final Gains kAngleGains = new Gains(0.65, 0.0, 0.0, 0.0, 0, 1.0);
+  private static final Gains kAngleGains = new Gains(1.0, 0.0, 0.0, 0.0, 0, 1.0);
 
   // CANCoder has 4096 ticks/rotation
   private static double kEncoderTicksPerRotation = 4096;

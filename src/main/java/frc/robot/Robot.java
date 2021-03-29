@@ -83,6 +83,8 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     autonomousActive = false;
+
+    base.zeroEncoder();
   }
 
   /** This function is called periodically during operator control. */

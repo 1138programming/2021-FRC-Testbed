@@ -6,9 +6,9 @@ import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
 
-public class resetGyro extends CommandBase {
+public class ResetGyro extends CommandBase {
     
-    public resetGyro() {
+    public ResetGyro() {
         addRequirements(Robot.base);
     }
 
