@@ -18,13 +18,18 @@ import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.Gains;
 public class SwerveModuleMK3 {
 
+  public double base_kP = 0.0;
+  public double base_kI = 0.0;
+  public double base_kD = 0.0;
+  public double base_kF = 0.0;
+
   private static final Gains kDriveGains = new Gains(15, 0.01, 0.1, 0.2, 0, 1.0);
   private static final Gains kAngleGains = new Gains(1.0, 0.0, 0.0, 0.0, 0, 1.0);
 
   // CANCoder has 4096 ticks/rotation
   private static double kEncoderTicksPerRotation = 4096;
 
-  private static double desiredTicks;
+  private double desiredTicks;
 
   private TalonFX driveMotor;
   private TalonFX angleMotor;
@@ -121,5 +126,4 @@ public class SwerveModuleMK3 {
     //below is a line to comment out from step 5
     driveMotor.set(TalonFXControlMode.PercentOutput, feetPerSecond / kMaxSpeed);
   }
-
 }

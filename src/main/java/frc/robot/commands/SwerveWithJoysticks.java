@@ -46,7 +46,7 @@ public class SwerveWithJoysticks extends CommandBase {
 
     //boolean calibrate = controller.getBumper(GenericHID.Hand.kLeft);
 
-    Robot.base.drive(xSpeed, ySpeed, rot, false);
+    Robot.base.drive(xSpeed, ySpeed, rot, true);
   }
     // Called once the command ends or is interrupted.
   @Override
