@@ -4,8 +4,9 @@ import edu.wpi.first.wpilibj.util.Units;
 
 public final class Constants {
   //these are limits you can change!!!
-  public static final double kMaxSpeed = Units.feetToMeters(13.6); // 20 feet per second
+  public static final double kMaxSpeed = Units.feetToMeters(13.6) / 100; // 20 feet per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
+  public static final double ticksPerRevolution = 4096;
   public static double feildCalibration = 0;
 
   //this is where you put the angle offsets you got from the smart dashboard

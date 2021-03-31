@@ -52,10 +52,10 @@ public class Base extends SubsystemBase {
 
   modules = new SwerveModuleMK3[] {
 
-    new SwerveModuleMK3(new TalonFX(frontLeftDriveId), new TalonFX(frontLeftSteerId), new CANifier(frontLeftCANifierId), Rotation2d.fromDegrees(frontLeftOffset), true), // Front Left
-    new SwerveModuleMK3(new TalonFX(frontRightDriveId), new TalonFX(frontRightSteerId), new CANifier(frontRightCANifierId), Rotation2d.fromDegrees(frontRightOffset), true), // Front Right
-    new SwerveModuleMK3(new TalonFX(backLeftDriveId), new TalonFX(backLeftSteerId), new CANifier(backLeftCANifierId), Rotation2d.fromDegrees(backLeftOffset), true), // Back Left
-    new SwerveModuleMK3(new TalonFX(backRightDriveId), new TalonFX(backRightSteerId), new CANifier(backRightCANifierId), Rotation2d.fromDegrees(backRightOffset), true)  // Back Right
+    new SwerveModuleMK3(new TalonFX(frontLeftDriveId), new TalonFX(frontLeftSteerId), new CANifier(frontLeftCANifierId), Rotation2d.fromDegrees(frontLeftOffset)), // Front Left
+    new SwerveModuleMK3(new TalonFX(frontRightDriveId), new TalonFX(frontRightSteerId), new CANifier(frontRightCANifierId), Rotation2d.fromDegrees(frontRightOffset)), // Front Right
+    new SwerveModuleMK3(new TalonFX(backLeftDriveId), new TalonFX(backLeftSteerId), new CANifier(backLeftCANifierId), Rotation2d.fromDegrees(backLeftOffset)), // Back Left
+    new SwerveModuleMK3(new TalonFX(backRightDriveId), new TalonFX(backRightSteerId), new CANifier(backRightCANifierId), Rotation2d.fromDegrees(backRightOffset))  // Back Right
 
   };
   
@@ -109,7 +109,9 @@ public class Base extends SubsystemBase {
     SmartDashboard.putNumber("Right Front Raw Angle", modules[1].getRawAngle());
     SmartDashboard.putNumber("Left Back Raw Angle", modules[2].getRawAngle());
     SmartDashboard.putNumber("Right Back Raw Angle", modules[3].getRawAngle());
-    SmartDashboard.putNumber("Desired Ticks", modules[2].getDesiredTicks());
+    SmartDashboard.putNumber("Desired Ticks", modules[1].getDesiredTicks());
+
+    SmartDashboard.putNumber("Current Tick", modules[1].getCurrentTicks());
     // This method will be called once per scheduler run
   }
 

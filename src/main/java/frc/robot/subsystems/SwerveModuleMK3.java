@@ -35,14 +35,14 @@ public class SwerveModuleMK3 {
   private TalonFX angleMotor;
   private CANifier canifier;
   private Rotation2d offset;
-  private Boolean invert;
+  //private Boolean invert;
 
-  public SwerveModuleMK3(TalonFX driveMotor, TalonFX angleMotor, CANifier canifier, Rotation2d offset, Boolean invert) {
+  public SwerveModuleMK3(TalonFX driveMotor, TalonFX angleMotor, CANifier canifier, Rotation2d offset) {
     this.driveMotor = driveMotor;
     this.angleMotor = angleMotor;
     this.canifier = canifier;
     this.offset = offset;
-    this.invert = invert;
+    //this.invert = invert;
 
     //angleMotor.configAllowableClosedloopError(0, 0, 0);
 
@@ -63,7 +63,7 @@ public class SwerveModuleMK3 {
 		driveMotor.config_kI(0, kDriveGains.kI, 0);
     driveMotor.config_kD(0, kDriveGains.kD, 0);
 
-    driveMotor.setInverted(invert);
+    //driveMotor.setInverted(invert);
     driveMotor.setNeutralMode(NeutralMode.Brake);
   }
 
@@ -73,22 +73,35 @@ public class SwerveModuleMK3 {
    * @return The relative rotational position of the angle motor in degrees
    */
   public Rotation2d getAngle() {
-    double deg = canifier.getQuadraturePosition() * 360.0 / 4096.0;
-
-    deg *= 10;
-		deg = (int) deg;
-    deg /= 10;
+    double deg = (canifier.getQuadraturePosition() % ticksPerRevolution) * 360 / ticksPerRevolution;
+    //double deg = canifier.getQuadraturePosition() * 360.0 / 4096.0;
+    if (deg < 0){
+      deg = deg +360;
+    }
+    //deg *= 10;
+		//deg = (int) deg;
+    //deg /= 10;
     
     return Rotation2d.fromDegrees(deg); //include angle offset
   }
   public double getRawAngle() {
-    double deg = canifier.getQuadraturePosition() * 360.0 / 4096.0;
+    //double deg = canifier.getQuadraturePosition() * 360.0 / 4096.0;
 
-    deg *= 10;
-		deg = (int) deg;
-    deg /= 10;
+    double deg = (canifier.getQuadraturePosition() % ticksPerRevolution) * 360 / ticksPerRevolution;
+
+    if (deg < 0){
+      deg = deg +360;
+    }
+
+    //deg *= 10;
+		//deg = (int) deg;
+    //deg /= 10;
 
     return deg; //include angle offset
+  }
+
+  public double getCurrentTicks() {
+    return canifier.getQuadraturePosition();
   }
 
   public double getDesiredTicks() {
@@ -106,16 +119,16 @@ public class SwerveModuleMK3 {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
 
-    Rotation2d currentRotation = getAngle();
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState, currentRotation);
+    Rotation2d getAngle = getAngle();
+    SwerveModuleState state = SwerveModuleState.optimize(desiredState, getAngle);
     
     // Find the difference between our current rotational position + our new rotational position
-    Rotation2d rotationDelta = state.angle.minus(currentRotation);
+    Rotation2d rotationDelta = state.angle.minus(getAngle);
     
     // Find the new absolute position of the module based on the difference in rotation
     double deltaTicks = (rotationDelta.getDegrees() / 360) * kEncoderTicksPerRotation;
     // Convert the CANCoder from it's position reading back to ticks
-    double currentTicks = getRawAngle() / 0.087890625;
+    double currentTicks = canifier.getQuadraturePosition();
     desiredTicks = deltaTicks;
 
     //below is a line to comment out from step 5
