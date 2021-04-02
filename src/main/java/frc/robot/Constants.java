@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.util.Units;
 
 public final class Constants {
   //these are limits you can change!!!
-  public static final double kMaxSpeed = Units.feetToMeters(13.6) / 100; // 20 feet per second
+  public static final double kMaxSpeed = Units.feetToMeters(13.6); // 20 feet per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
   public static final double ticksPerRevolution = 4096;
   public static double feildCalibration = 0;
@@ -34,4 +34,20 @@ public final class Constants {
   public static final int backRightDriveId = 1; 
   public static final int backRightCANifierId = 10; 
   public static final int backRightSteerId = 4; 
+
+  //base PID constants
+  public static final double module1_kP = 0;
+  public static final double module2_kP = 0;
+  public static final double module3_kP = 0;
+  public static final double module4_kP = 0;
+
+  public static final double module1_kI = 0;
+  public static final double module2_kI = 0;
+  public static final double module3_kI = 0;
+  public static final double module4_kI = 0;
+
+  public static final double module1_kD = 0;
+  public static final double module2_kD = 0;
+  public static final double module3_kD = 0;
+  public static final double module4_kD = 0;
 }

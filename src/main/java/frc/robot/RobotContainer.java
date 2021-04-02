@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Robot;
 import frc.robot.commands.SwerveWithJoysticks;
 import frc.robot.commands.ResetGyro;
+import frc.robot.commands.ResetSetpoint;
 import frc.robot.CommandGroups.AutonMoveBaseFor;
 
 public class RobotContainer {
@@ -17,7 +18,7 @@ public class RobotContainer {
   private static final int KXboxArms = 1;  
 
   //Deadzone
-  private static final double KDeadZone = 0.1;
+  private static final double KDeadZone = 0.05;
 
   //Logitech Button Constants
   public static final int KLogitechButtonX = 1;
@@ -30,7 +31,7 @@ public class RobotContainer {
   public static final int KLogitechRightTrigger = 8;
 
   private static final int KLeftYAxis = 1;
-  private static final int KRightYAxis = 3;
+  private static final int KRightYAxis = 0;
 
   //Xbox Button Constants
   public static final int KXboxButtonA = 1; 
@@ -87,6 +88,7 @@ public class RobotContainer {
 
   private void configureButtonBindings() {
     logitechBtnRB.whenPressed(new ResetGyro());
+    logitechBtnLB.whenPressed(new ResetSetpoint());
   }
 
   public double getRightAxis() {
@@ -106,7 +108,7 @@ public class RobotContainer {
   }
 
   public double getArcadeRightAxis() {
-    double X = logitech.getRawAxis(2);
+    double X = logitech.getRawAxis(4);
     if (X > KDeadZone || X < -KDeadZone) {
       return -X;
     } else {

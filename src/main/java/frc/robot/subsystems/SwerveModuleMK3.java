@@ -16,15 +16,15 @@ import edu.wpi.first.wpilibj.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.Gains;
+
+import edu.wpi.first.wpilibj.controller.PIDController;
+
 public class SwerveModuleMK3 {
 
-  public double base_kP = 0.0;
-  public double base_kI = 0.0;
-  public double base_kD = 0.0;
-  public double base_kF = 0.0;
+  private static double maxDeltaTicks = 990.0;
 
   private static final Gains kDriveGains = new Gains(15, 0.01, 0.1, 0.2, 0, 1.0);
-  private static final Gains kAngleGains = new Gains(1.0, 0.0, 0.0, 0.0, 0, 1.0);
+  // private static final Gains kAngleGains = new Gains(0.0, 0.0, 0.0, 0.0, 0, 0.0); //angle gains: 1.0, 0.0, 0.0, 0.0, 0, 1.0
 
   // CANCoder has 4096 ticks/rotation
   private static double kEncoderTicksPerRotation = 4096;
@@ -35,21 +35,26 @@ public class SwerveModuleMK3 {
   private TalonFX angleMotor;
   private CANifier canifier;
   private Rotation2d offset;
+
+  private double calculatedDesireTicks;
   //private Boolean invert;
 
-  public SwerveModuleMK3(TalonFX driveMotor, TalonFX angleMotor, CANifier canifier, Rotation2d offset) {
+  private PIDController angleMotorController;
+
+  public SwerveModuleMK3(TalonFX driveMotor, TalonFX angleMotor, CANifier canifier, Rotation2d offset, PIDController angleMotorPIDController) {
     this.driveMotor = driveMotor;
     this.angleMotor = angleMotor;
     this.canifier = canifier;
     this.offset = offset;
+    this.angleMotorController = angleMotorPIDController;
     //this.invert = invert;
 
     //angleMotor.configAllowableClosedloopError(0, 0, 0);
 
 		/* Config Position Closed Loop gains in slot0, tsypically kF stays zero. */
-		angleMotor.config_kP(0, kAngleGains.kP, 0);
-		angleMotor.config_kI(0, kAngleGains.kI, 0);
-    angleMotor.config_kD(0, kAngleGains.kD, 0);
+		// angleMotor.config_kP(0, kAngleGains.kP, 0);
+		// angleMotor.config_kI(0, kAngleGains.kI, 0);
+    // angleMotor.config_kD(0, kAngleGains.kD, 0);
     
     angleMotor.setNeutralMode(NeutralMode.Brake); //not needed but nice to keep the robot stopped when you want it stopped
 
@@ -112,6 +117,14 @@ public class SwerveModuleMK3 {
     angleMotor.setSelectedSensorPosition(0, 0, 0);
     canifier.setQuadraturePosition(0, 0);
   }
+  
+  public void resetAngleSetpoint() {
+    angleMotor.set(TalonFXControlMode.Position, 0);
+  }
+
+  public double getSetpoint() {
+    return calculatedDesireTicks;
+  }
   //:)
   /**
    * Set the speed + rotation of the swerve module from a SwerveModuleState object
@@ -129,14 +142,27 @@ public class SwerveModuleMK3 {
     double deltaTicks = (rotationDelta.getDegrees() / 360) * kEncoderTicksPerRotation;
     // Convert the CANCoder from it's position reading back to ticks
     double currentTicks = canifier.getQuadraturePosition();
+
     desiredTicks = deltaTicks;
 
+    if (desiredTicks > maxDeltaTicks) {
+      desiredTicks = maxDeltaTicks;
+    } else if (desiredTicks < -maxDeltaTicks) {
+      desiredTicks = -maxDeltaTicks;
+    }
+
     //below is a line to comment out from step 5
-    angleMotor.set(TalonFXControlMode.Position, desiredTicks);
+    calculatedDesireTicks = angleMotorController.calculate(canifier.getQuadraturePosition(), desiredTicks);
+    angleMotor.set(TalonFXControlMode.Position, calculatedDesireTicks);
 
     double feetPerSecond = Units.metersToFeet(state.speedMetersPerSecond)/2;
 
     //below is a line to comment out from step 5
-    driveMotor.set(TalonFXControlMode.PercentOutput, feetPerSecond / kMaxSpeed);
+    //driveMotor.set(TalonFXControlMode.PercentOutput, feetPerSecond / kMaxSpeed);
+  }
+  public void setAnglePIDGains(double kP, double kI, double kD){
+    angleMotorController.setP(kP);
+    angleMotorController.setI(kI);
+    angleMotorController.setD(kD);
   }
 }

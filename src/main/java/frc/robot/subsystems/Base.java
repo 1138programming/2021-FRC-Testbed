@@ -8,7 +8,7 @@ import static frc.robot.Constants.*;
 
 import com.ctre.phoenix.CANifier;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-
+import edu.wpi.first.wpilibj.controller.PIDController;
 
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
@@ -52,10 +52,10 @@ public class Base extends SubsystemBase {
 
   modules = new SwerveModuleMK3[] {
 
-    new SwerveModuleMK3(new TalonFX(frontLeftDriveId), new TalonFX(frontLeftSteerId), new CANifier(frontLeftCANifierId), Rotation2d.fromDegrees(frontLeftOffset)), // Front Left
-    new SwerveModuleMK3(new TalonFX(frontRightDriveId), new TalonFX(frontRightSteerId), new CANifier(frontRightCANifierId), Rotation2d.fromDegrees(frontRightOffset)), // Front Right
-    new SwerveModuleMK3(new TalonFX(backLeftDriveId), new TalonFX(backLeftSteerId), new CANifier(backLeftCANifierId), Rotation2d.fromDegrees(backLeftOffset)), // Back Left
-    new SwerveModuleMK3(new TalonFX(backRightDriveId), new TalonFX(backRightSteerId), new CANifier(backRightCANifierId), Rotation2d.fromDegrees(backRightOffset))  // Back Right
+    new SwerveModuleMK3(new TalonFX(frontLeftDriveId), new TalonFX(frontLeftSteerId), new CANifier(frontLeftCANifierId), Rotation2d.fromDegrees(frontLeftOffset), new PIDController(module1_kP, module1_kI, module1_kD)), // Front Left
+    new SwerveModuleMK3(new TalonFX(frontRightDriveId), new TalonFX(frontRightSteerId), new CANifier(frontRightCANifierId), Rotation2d.fromDegrees(frontRightOffset), new PIDController(module2_kP, module2_kI, module2_kD)), // Front Right
+    new SwerveModuleMK3(new TalonFX(backLeftDriveId), new TalonFX(backLeftSteerId), new CANifier(backLeftCANifierId), Rotation2d.fromDegrees(backLeftOffset), new PIDController(module3_kP, module3_kI, module3_kD)), // Back Left
+    new SwerveModuleMK3(new TalonFX(backRightDriveId), new TalonFX(backRightSteerId), new CANifier(backRightCANifierId), Rotation2d.fromDegrees(backRightOffset), new PIDController(module4_kP, module4_kI, module4_kD))  // Back Right
 
   };
   
@@ -83,13 +83,13 @@ public class Base extends SubsystemBase {
           ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(-gyro.getAngle()))
           : new ChassisSpeeds(xSpeed, ySpeed, rot));
     SwerveDriveKinematics.normalizeWheelSpeeds(states, kMaxSpeed);
-    for (int i = 0; i < states.length; i++) {
-      SwerveModuleMK3 module = modules[i];
-      SwerveModuleState state = states[i];
+    //for (int i = 0; i < states.length; i++) {
+      SwerveModuleMK3 module = modules[3];
+      SwerveModuleState state = states[3];
       //below is a line to comment out from step 5
       module.setDesiredState(state);
       //SmartDashboard.putNumber("gyro Angle", gyro.getAngle());
-    }
+    //}
   }
 
   public void resetGyro() {
@@ -103,16 +103,34 @@ public class Base extends SubsystemBase {
     modules[3].zeroEncoders();
   }
 
+  public void resetSetpoint() {
+    for (int i = 0; i < modules.length; i++){
+      modules[i].resetAngleSetpoint(); 
+    }
+  }
+
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Left Front Raw Angle", modules[0].getRawAngle());
     SmartDashboard.putNumber("Right Front Raw Angle", modules[1].getRawAngle());
     SmartDashboard.putNumber("Left Back Raw Angle", modules[2].getRawAngle());
     SmartDashboard.putNumber("Right Back Raw Angle", modules[3].getRawAngle());
-    SmartDashboard.putNumber("Desired Ticks", modules[1].getDesiredTicks());
+    SmartDashboard.putNumber("Desired Ticks", modules[3].getDesiredTicks());
 
-    SmartDashboard.putNumber("Current Tick", modules[1].getCurrentTicks());
+    SmartDashboard.getNumber("Base kP", 0.0);
+    SmartDashboard.getNumber("Base kI", 0.0);
+    SmartDashboard.getNumber("Base kD", 0.0);
+
+    SmartDashboard.putNumber("Current Tick", modules[3].getCurrentTicks());
+    //SmartDashboard.putNumber("SetPoint", modules[3].getSetpoint());
     // This method will be called once per scheduler run
+  }
+
+  public void setModuleGains(double kP, double kI, double kD){
+    // modules[1].setAnglePIDGains(kP, kI, kD);
+    // modules[2].setAnglePIDGains(kP, kI, kD);
+    modules[3].setAnglePIDGains(kP, kI, kD);
+    // modules[4].setAnglePIDGains(kP, kI, kD);
   }
 
   @Override

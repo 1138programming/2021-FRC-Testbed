@@ -4,6 +4,7 @@ import static frc.robot.Constants.*;
 
 import edu.wpi.first.wpilibj.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 
 public class SwerveWithJoysticks extends CommandBase {
@@ -19,10 +20,20 @@ public class SwerveWithJoysticks extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    SmartDashboard.putNumber("Base kP", 0.0);
+    SmartDashboard.putNumber("Base kI", 0.0);
+    SmartDashboard.putNumber("Base kD", 0.0);
   }
   
   @Override
   public void execute() {
+
+    double kP = SmartDashboard.getNumber("Base kP", 0.0);
+    double kI = SmartDashboard.getNumber("Base kI", 0.0);
+    double kD = SmartDashboard.getNumber("Base kD", 0.0);
+
+    Robot.base.setModuleGains(kP, kI, kD);
+
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
     final var xSpeed =
