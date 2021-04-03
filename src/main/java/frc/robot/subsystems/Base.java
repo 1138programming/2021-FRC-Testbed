@@ -58,6 +58,10 @@ public class Base extends SubsystemBase {
     new SwerveModuleMK3(new TalonFX(backRightDriveId), new TalonFX(backRightSteerId), new CANifier(backRightCANifierId), Rotation2d.fromDegrees(backRightOffset))  // Back Right
 
   };
+
+  SmartDashboard.putNumber("Base kP", 0.0);
+  SmartDashboard.putNumber("Base kI", 0.0);
+  SmartDashboard.putNumber("Base kD", 0.0);
   
   gyro.reset(); 
   }
@@ -77,46 +81,57 @@ public class Base extends SubsystemBase {
       //gyro.reset(); //recalibrates gyro offset
     //}
 
-    SwerveModuleState[] states =
-      kinematics.toSwerveModuleStates(
-        fieldRelative
-          ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(-gyro.getAngle()))
-          : new ChassisSpeeds(xSpeed, ySpeed, rot));
-    SwerveDriveKinematics.normalizeWheelSpeeds(states, kMaxSpeed);
-    for (int i = 0; i < states.length; i++) {
-      SwerveModuleMK3 module = modules[i];
-      SwerveModuleState state = states[i];
-      //below is a line to comment out from step 5
-      module.setDesiredState(state);
-      //SmartDashboard.putNumber("gyro Angle", gyro.getAngle());
-    }
+  SwerveModuleState[] states =
+    kinematics.toSwerveModuleStates(
+      fieldRelative
+        ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, Rotation2d.fromDegrees(-gyro.getAngle()))
+        : new ChassisSpeeds(xSpeed, ySpeed, rot));
+  SwerveDriveKinematics.normalizeWheelSpeeds(states, kMaxSpeed);
+  for (int i = 0; i < states.length; i++) {
+    SwerveModuleMK3 module = modules[i];
+    SwerveModuleState state = states[i];
+    //below is a line to comment out from step 5
+    module.setDesiredState(state);
+    //SmartDashboard.putNumber("gyro Angle", gyro.getAngle());
   }
+}
 
-  public void resetGyro() {
-    gyro.reset(); //recalibrates gyro offset
-  }
+public void resetGyro() {
+  gyro.reset(); //recalibrates gyro offset
+}
 
-  public void zeroEncoder() {
-    modules[0].zeroEncoders();
-    modules[1].zeroEncoders();
-    modules[2].zeroEncoders();
-    modules[3].zeroEncoders();
-  }
+public void zeroEncoder() {
+  modules[0].zeroEncoders();
+  modules[1].zeroEncoders();
+  modules[2].zeroEncoders();
+  modules[3].zeroEncoders();
+}
 
-  @Override
-  public void periodic() {
-    SmartDashboard.putNumber("Left Front Raw Angle", modules[0].getRawAngle());
-    SmartDashboard.putNumber("Right Front Raw Angle", modules[1].getRawAngle());
-    SmartDashboard.putNumber("Left Back Raw Angle", modules[2].getRawAngle());
-    SmartDashboard.putNumber("Right Back Raw Angle", modules[3].getRawAngle());
-    SmartDashboard.putNumber("Desired Ticks", modules[1].getDesiredTicks());
+@Override
+public void periodic() {
+  SmartDashboard.putNumber("Left Front Raw Angle", modules[0].getRawAngle());
+  SmartDashboard.putNumber("Right Front Raw Angle", modules[1].getRawAngle());
+  SmartDashboard.putNumber("Left Back Raw Angle", modules[2].getRawAngle());
+  SmartDashboard.putNumber("Right Back Raw Angle", modules[3].getRawAngle());
+  SmartDashboard.putNumber("Desired Ticks", modules[3].getDesiredTicks());
+  SmartDashboard.putNumber("Closed Loop Target", modules[3].getSelectedSensonPosition());
 
-    SmartDashboard.putNumber("Current Tick", modules[1].getCurrentTicks());
-    // This method will be called once per scheduler run
-  }
+  setModuleGains(SmartDashboard.getNumber("Base kP", 0.0), SmartDashboard.getNumber("Base kI", 0.0), SmartDashboard.getNumber("Base kD", 0.0));
 
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-  }
+  SmartDashboard.putNumber("Current Tick", modules[3].getCurrentTicks());
+  //SmartDashboard.putNumber("SetPoint", modules[3].getSetpoint());
+  // This method will be called once per scheduler run
+}
+
+public void setModuleGains(double kP, double kI, double kD){
+  // modules[1].setAnglePIDGains(kP, kI, kD);
+  // modules[2].setAnglePIDGains(kP, kI, kD);
+  modules[3].setAnglePIDGains(kP, kI, kD);
+  // modules[4].setAnglePIDGains(kP, kI, kD);
+}
+
+@Override
+public void simulationPeriodic() {
+  // This method will be called once per scheduler run during simulation
+}
 }

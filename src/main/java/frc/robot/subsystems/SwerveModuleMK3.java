@@ -18,12 +18,10 @@ import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.Gains;
 public class SwerveModuleMK3 {
 
-  public double base_kP = 0.0;
-  public double base_kI = 0.0;
-  public double base_kD = 0.0;
-  public double base_kF = 0.0;
+  private static double maxDeltaTicks = 980.0;
 
   private static final Gains kDriveGains = new Gains(15, 0.01, 0.1, 0.2, 0, 1.0);
+  // P = 0.75, I= 0.0, D = 0.05
   private static final Gains kAngleGains = new Gains(1.0, 0.0, 0.0, 0.0, 0, 1.0);
 
   // CANCoder has 4096 ticks/rotation
@@ -53,7 +51,7 @@ public class SwerveModuleMK3 {
     
     angleMotor.setNeutralMode(NeutralMode.Brake); //not needed but nice to keep the robot stopped when you want it stopped
 
-    angleMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 0);
+    angleMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
 
     //driveMotor.configAllowableClosedloopError(0, 0, 0);
 
@@ -88,9 +86,8 @@ public class SwerveModuleMK3 {
     //double deg = canifier.getQuadraturePosition() * 360.0 / 4096.0;
 
     double deg = (canifier.getQuadraturePosition() % ticksPerRevolution) * 360 / ticksPerRevolution;
-
     if (deg < 0){
-      deg = deg +360;
+      deg = deg + 360;
     }
 
     //deg *= 10;
@@ -106,6 +103,10 @@ public class SwerveModuleMK3 {
 
   public double getDesiredTicks() {
     return desiredTicks;
+  }
+
+  public double getSelectedSensonPosition() {
+    return angleMotor.getSelectedSensorPosition();
   }
 
   public void zeroEncoders() {
@@ -129,7 +130,14 @@ public class SwerveModuleMK3 {
     double deltaTicks = (rotationDelta.getDegrees() / 360) * kEncoderTicksPerRotation;
     // Convert the CANCoder from it's position reading back to ticks
     double currentTicks = canifier.getQuadraturePosition();
+
     desiredTicks = deltaTicks;
+
+    if (desiredTicks > maxDeltaTicks) {
+      desiredTicks = maxDeltaTicks;
+    } else if (desiredTicks < -maxDeltaTicks) {
+      desiredTicks = -maxDeltaTicks;
+    }
 
     //below is a line to comment out from step 5
     angleMotor.set(TalonFXControlMode.Position, desiredTicks);
@@ -138,5 +146,10 @@ public class SwerveModuleMK3 {
 
     //below is a line to comment out from step 5
     driveMotor.set(TalonFXControlMode.PercentOutput, feetPerSecond / kMaxSpeed);
+  }
+  public void setAnglePIDGains(double kP, double kI, double kD){
+    //angleMotor.config_kP(0, kP, 0);
+		//angleMotor.config_kI(0, kI, 0);
+    //angleMotor.config_kD(0, kD, 0);
   }
 }
